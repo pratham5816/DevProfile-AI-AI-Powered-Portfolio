@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.Buffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class Parser {
@@ -20,10 +20,31 @@ public class Parser {
 
         try{
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-            CSVParser csvParser = CSVFormat.DEFAULT.builder().setIgnoreSurroundingSpaces(true).build().parse(reader);
+            CSVParser csvParser = CSVFormat.DEFAULT.builder().setHeader().setSkipHeaderRecord(true).setIgnoreSurroundingSpaces(true).build().parse(reader);
 
-            for(CSVRecord csvRecord : csvParser){
-                System.out.println(csvRecord);
+            String[] columns = {"MORNING", "AFTERNOON", "EVENING"};
+
+            for (CSVRecord csvRecord : csvParser) {
+                StringBuilder dayLog = new StringBuilder();
+                for (String col : columns) {
+                    if (csvRecord.isMapped(col)) {
+                        String cell = csvRecord.get(col).trim();
+                        if (!cell.isEmpty()) {
+                            String[] tasks = cell.split("\\|");
+                            for (String task : tasks) {
+                                String trimmed = task.trim();
+                                if (!trimmed.isEmpty()) {
+                                    dayLog.append(trimmed).append("\n");
+                                }
+                            }
+                        }
+                    }
+                }
+                if (dayLog.length() > 20) {
+                    String id = UUID.randomUUID().toString();
+                    String content = "Engineering Activities:\n" + dayLog.toString().trim();
+                    documents.add(new Document(id, content, "WorkDone Log"));
+                }
             }
             return documents;
         }
