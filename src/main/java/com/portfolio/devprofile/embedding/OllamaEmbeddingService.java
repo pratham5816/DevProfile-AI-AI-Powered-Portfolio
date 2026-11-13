@@ -32,6 +32,4 @@ public class OllamaEmbeddingService implements EmbeddingServices{
         return (response != null && response.embedding() != null) ? response.embedding() : List.of();
     }
 
-
-
 }

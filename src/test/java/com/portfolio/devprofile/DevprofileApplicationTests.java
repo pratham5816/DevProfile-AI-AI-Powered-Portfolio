@@ -2,11 +2,14 @@ package com.portfolio.devprofile;
 
 import com.portfolio.devprofile.embedding.OllamaEmbeddingService;
 import com.portfolio.devprofile.ingestion.Document;
+import com.portfolio.devprofile.ingestion.IngestionService;
 import com.portfolio.devprofile.ingestion.Parser;
+import com.portfolio.devprofile.vectorstore.QdrantVectorStore;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.ResponseEntity;
 
 import java.io.InputStream;
 import java.util.List;
@@ -18,7 +21,10 @@ class DevprofileApplicationTests {
 
     @Autowired
     Parser parser;
-    Document document;
+    @Autowired
+    QdrantVectorStore qdrantVectorStore;
+    @Autowired
+    IngestionService ingestionService;
 
 	@Test
 	void contextLoads() {
@@ -48,9 +54,23 @@ class DevprofileApplicationTests {
     @DisplayName("Test ollama api for embedding generation")
     void testOllamaApiLocal() {
         OllamaEmbeddingService embeddingService = new OllamaEmbeddingService("http://localhost:11434", "nomic-embed-text");
-        List<Float> resp = embeddingService.embed("Pratham is a Software Engineer");
+        List<Float> resp = embeddingService.embed("What pratham did in shopify integration");
         System.out.println("Embedding: " + resp);
         System.out.println("Embedding size: " + resp.size());
     }
+
+    @Test
+    @DisplayName("Test qdrant collections api")
+    void testQdrantCollectionsApi() {
+        ResponseEntity<String> response = qdrantVectorStore.checkCollection();
+        System.out.println(response.getBody());
+    }
+
+    @Test
+    @DisplayName("Test document to point conversion function")
+    void testDocumentToPointConversionFunction() {
+//        ingestionService.runIngestion();
+    }
+
 
 }
