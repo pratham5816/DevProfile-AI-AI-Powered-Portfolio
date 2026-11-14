@@ -1,10 +1,14 @@
 package com.portfolio.devprofile;
 
+import com.portfolio.devprofile.dto.ChatMessage;
+import com.portfolio.devprofile.dto.ChatResponse;
+import com.portfolio.devprofile.dto.SearchResponse;
 import com.portfolio.devprofile.embedding.OllamaEmbeddingService;
 import com.portfolio.devprofile.ingestion.Document;
 import com.portfolio.devprofile.ingestion.IngestionService;
 import com.portfolio.devprofile.ingestion.Parser;
 import com.portfolio.devprofile.vectorstore.QdrantVectorStore;
+import com.portfolio.devprofile.rag.ChatRag;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +29,10 @@ class DevprofileApplicationTests {
     QdrantVectorStore qdrantVectorStore;
     @Autowired
     IngestionService ingestionService;
+    @Autowired
+    OllamaEmbeddingService ollamaEmbeddingService;
+    @Autowired
+    ChatRag chatRag;
 
 	@Test
 	void contextLoads() {
@@ -72,5 +80,28 @@ class DevprofileApplicationTests {
 //        ingestionService.runIngestion();
     }
 
+    @Test
+    @DisplayName("Test vector db search")
+    void testVectorDbSearch() {
+        List<Float> vector =  ollamaEmbeddingService.embed("What pratham did in Webhhook Integration");
+        System.out.println("vector size: " + vector.size());
+        SearchResponse response = qdrantVectorStore.searchPoints(vector, 2);
+        System.out.println(response.result());
+        System.out.println(response.status());
+    }
+
+    @Test
+    @DisplayName("Test ollama chat api")
+    void testChatApi() {
+        ChatResponse response = chatRag.chatModel(new ChatMessage("user","Hi") , false) ;
+        System.out.println("Chat Response: " + response);
+        System.out.println("Done: " + response.done());
+    }
+
+    @Test
+    @DisplayName("Test chat rag function")
+    void testSearchApi() {
+        chatRag.chatRequest("what this guy did in webhook?",false);
+    }
 
 }

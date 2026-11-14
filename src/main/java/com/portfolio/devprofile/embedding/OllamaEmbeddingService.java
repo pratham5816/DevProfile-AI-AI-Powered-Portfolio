@@ -29,7 +29,10 @@ public class OllamaEmbeddingService implements EmbeddingServices{
                     .retrieve()
                     .body(OllamaEmbeddingResponse.class);
 
-        return (response != null && response.embedding() != null) ? response.embedding() : List.of();
+            if(response == null || response.embedding().size() != 768){
+                throw new RuntimeException("ollama integration layer is broken");
+            }
+            return response.embedding();
     }
 
 }
